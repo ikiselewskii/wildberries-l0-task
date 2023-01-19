@@ -1,7 +1,7 @@
 version: '3'
 services:
   database:
-    image: postgres
+    image: postgres-alpine:latest
     restart: always
     env_file:
       .env
@@ -9,11 +9,18 @@ services:
       -"5432:5432"
     volumes:
       -data:/var/lib/postgresql/data
-  server:
+  cache-server:
     build:
-      context: .
+      context: ./cache-server
       dockerfile: Dockerfile
     env_file: .env
     depends_on:
       database
+  publish-server:
+    build:
+      context: ./publish-server
+      dockerfile: Dockerfile
+    env_file: .env
+  queue:
+    image: nats-streaming-alpine:latest
     
