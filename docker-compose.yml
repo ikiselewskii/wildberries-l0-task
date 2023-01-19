@@ -14,6 +14,8 @@ services:
       context: ./cache-server
       dockerfile: Dockerfile
     env_file: .env
+    ports:
+      -"8080"
     depends_on:
       database
   publish-server:
@@ -21,6 +23,7 @@ services:
       context: ./publish-server
       dockerfile: Dockerfile
     env_file: .env
+    ports:
+      -"8081"
   queue:
     image: nats-streaming-alpine:latest
-    
