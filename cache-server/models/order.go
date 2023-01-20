@@ -1,6 +1,7 @@
 package models
 
 type Order struct{
+	ID int
 	Order_uid string `json:"order_uid"`
 	Track_number string `json:"track_number"`
 	Entry string `json:"entry"`

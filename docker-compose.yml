@@ -1,29 +1,36 @@
 version: '3'
 services:
   database:
-    image: postgres-alpine:latest
+    image: postgres:15-alpine
     restart: always
     env_file:
       .env
     ports:
-      -"5432:5432"
+      - 5432:5432
     volumes:
-      -data:/var/lib/postgresql/data
+      - ./data:/var/lib/postgresql/data
   cache-server:
     build:
       context: ./cache-server
       dockerfile: Dockerfile
     env_file: .env
     ports:
-      -"8080"
-    depends_on:
-      database
+      - 8080:8080
+    depends_on: 
+      - database 
+      - nats-streaming
   publish-server:
     build:
       context: ./publish-server
       dockerfile: Dockerfile
     env_file: .env
     ports:
-      -"8081"
-  queue:
-    image: nats-streaming-alpine:latest
+      - 8080:8081
+  nats-streaming:
+    image: nats-streaming
+    ports:
+      - 4222:4222
+      - 8222:8222
+    command: "-m 8222 --cluster_id test-cluster --store file --dir /data"
+    volumes:
+      - ./data:/data

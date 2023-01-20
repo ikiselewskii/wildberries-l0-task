@@ -1,20 +1,33 @@
 package cache
-import "wildberries-l0-task/cache/models"
+import (
+	"wildberries-l0-task/cache/models"
+	"sync"
+)
 
 
-type storage map[string]models.Order
+type storage struct {
+	cache map[int]*models.Order
+	mx sync.Mutex
+}
 
 var cache storage
 
 func New() *storage{
-	cache = make(storage)
-	return &cache
+	cache := make(map[int]*models.Order)
+	return &storage{
+		cache : cache,
+	}
 }
 
-func GetOrderByUID(uid string) models.Order{
-	return cache[uid]
+func GetOrderByID(id int) *models.Order{
+	cache.mx.Lock()
+	order := cache.cache[id]
+	cache.mx.Unlock()
+	return order
 }
 
-func Add (order models.Order) {
-	cache[order.Order_uid] = order
+func Add (order *models.Order) {
+	cache.mx.Lock()
+	cache.cache[order.ID] = order
+	cache.mx.Unlock()
 }
