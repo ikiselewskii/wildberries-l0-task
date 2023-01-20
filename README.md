@@ -1,1 +1,0 @@
-# wildberries-l0-task
