@@ -1,7 +1,9 @@
 package server
 
-import(
+import (
+	"encoding/json"
 	"net/http"
+	"wildberries-l0-task/cache/cache"
 )
 
 func handleGetByUid(rw http.ResponseWriter, r *http.Response){
@@ -9,6 +11,16 @@ func handleGetByUid(rw http.ResponseWriter, r *http.Response){
 		rw.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	id := r.Request.URL.Query().Get("id")
+	order, exists := cache.GetOrderByID(id)
+	if !exists{
+		rw.WriteHeader(http.StatusNotFound)
+		rw.Write([]byte("Order not found"))
+	}
+	data, err := json.Marshal(order)
+	if err != nil{
+		rw.WriteHeader(http.StatusInternalServerError)
+	}
 	rw.WriteHeader(http.StatusOK)
-	rw.Write([]byte("json"))
+	rw.Write(data)
 }

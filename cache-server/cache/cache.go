@@ -19,11 +19,11 @@ func Initialize() *storage{
 	}
 }
 
-func GetOrderByID(id string) *models.Order{
+func GetOrderByID(id string) (*models.Order, bool){
 	cache.mx.Lock()
-	order := cache.cache[id]
+	order,exists := cache.cache[id]
 	cache.mx.Unlock()
-	return order
+	return order, exists
 }
 
 func Add (order *models.Order) {
