@@ -1,30 +1,38 @@
 package nats
 
 import (
-	"github.com/nats-io/stan.go"
+	"encoding/json"
 	"log"
+	"wildberries-l0-task/cache/cache"
+	"wildberries-l0-task/cache/database"
+	"wildberries-l0-task/cache/models"
+
+	"github.com/nats-io/stan.go"
 )
 
+func Subscribe() {
+	sc, err := stan.Connect("test-cluster", "client-cacher", stan.NatsURL("nats://nats:4222"))
+	if err != nil {
+		log.Fatalf("ERROR connecting to NATS Streaming: %v", err)
+	}
+	defer sc.Close()
 
-func Subscribe(){
-	sc, err := stan.Connect("test-cluster", "client-123", stan.NatsURL("nats://localhost:4222"))
-    if err != nil {
-        log.Fatalf("Error connecting to NATS Streaming: %v", err)
-    }
-    defer sc.Close()
+	_, err = sc.Subscribe("wb-channel", handleMessage, stan.DurableName("my-durable"), stan.SetManualAckMode())
+	if err != nil {
+		log.Fatalf("ERROR subscribing to channel: %v", err)
+	}
 
-    // Subscribe to a channel
-    _, err = sc.Subscribe("my-channel", handleMessage, stan.DurableName("my-durable"))
-    if err != nil {
-        log.Fatalf("Error subscribing to channel: %v", err)
-    }
-
-    // Wait for messages
-    select {}
+	select {}
 
 }
 
-func handleMessage(msg *stan.Msg){
+func handleMessage(msg *stan.Msg) {
 	log.Printf("Received message: %s", string(msg.Data))
+	var order models.Order
+	if err := json.Unmarshal(msg.Data, &order); err != nil {
+		log.Printf("ERROR Unmarshalling Went Wrong: %s", err)
+	}
+	cache.Add(&order)
+	database.AddOrder(&order)
 	msg.Ack()
 }

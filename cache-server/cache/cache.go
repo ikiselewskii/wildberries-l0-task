@@ -6,20 +6,20 @@ import (
 
 
 type storage struct {
-	cache map[int]*models.Order
+	cache map[string]*models.Order
 	mx sync.Mutex
 }
 
 var cache storage
 
-func New() *storage{
-	cache := make(map[int]*models.Order)
+func Initialize() *storage{
+	cache := make(map[string]*models.Order)
 	return &storage{
 		cache : cache,
 	}
 }
 
-func GetOrderByID(id int) *models.Order{
+func GetOrderByID(id string) *models.Order{
 	cache.mx.Lock()
 	order := cache.cache[id]
 	cache.mx.Unlock()
@@ -28,6 +28,6 @@ func GetOrderByID(id int) *models.Order{
 
 func Add (order *models.Order) {
 	cache.mx.Lock()
-	cache.cache[order.ID] = order
+	cache.cache[order.Order_uid] = order
 	cache.mx.Unlock()
 }

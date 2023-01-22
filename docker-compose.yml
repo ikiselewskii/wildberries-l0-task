@@ -1,19 +1,24 @@
 version: '3'
 services:
   database:
-    image: postgres:15-alpine
+    image: postgres:15
     restart: always
-    env_file:
-      .env
+    environment:
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_DB: $POSTGRES_DB
+      PGDATA: $PGDATA
     ports:
       - 5432:5432
     volumes:
       - ./data:/var/lib/postgresql/data
+    hostname: $POSTGRES_HOSTNAME
   cache-server:
     build:
       context: ./cache-server
       dockerfile: Dockerfile
-    env_file: .env
+    env_file:
+      - .env
     ports:
       - 8080:8080
     depends_on: 
@@ -23,14 +28,21 @@ services:
     build:
       context: ./publish-server
       dockerfile: Dockerfile
-    env_file: .env
+    env_file: 
+      - .env
     ports:
-      - 8080:8081
+      - 8081:8081
+    depends_on:
+      - nats-streaming
+      - cache-server
   nats-streaming:
     image: nats-streaming
     ports:
       - 4222:4222
       - 8222:8222
+    hostname: $NATS_HOSTNAME
+    env_file:
+      - .env
     command: "-m 8222 --cluster_id test-cluster --store file --dir /data"
     volumes:
       - ./data:/data
