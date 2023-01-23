@@ -31,8 +31,15 @@ func handleMessage(msg *stan.Msg) {
 	var order models.Order
 	if err := json.Unmarshal(msg.Data, &order); err != nil {
 		log.Printf("ERROR Unmarshalling Went Wrong: %s", err)
+		msg.Ack()
+		return
 	}
 	cache.Add(&order)
-	database.AddOrder(&order)
+	err := database.AddOrder(order.Order_uid, msg.Data)
+	if err != nil{
+		log.Printf("ERROR Can`t add into a database")
+		msg.Ack()
+		return
+	}
 	msg.Ack()
 }

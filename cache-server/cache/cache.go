@@ -1,7 +1,9 @@
 package cache
+
 import (
-	"wildberries-l0-task/cache/models"
+	"log"
 	"sync"
+	"wildberries-l0-task/cache/models"
 )
 
 
@@ -13,10 +15,10 @@ type storage struct {
 var cache storage
 
 func Initialize() *storage{
-	cache := make(map[string]*models.Order)
-	return &storage{
-		cache : cache,
-	}
+	allocation := make(map[string]*models.Order)
+	cache = storage{cache : allocation,}
+	log.Print("LOG Cache initialized")
+	return &cache
 }
 
 func GetOrderByID(id string) (*models.Order, bool){

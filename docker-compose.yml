@@ -11,8 +11,13 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - ./postgres-data:/var/lib/postgresql/data
     hostname: $POSTGRES_HOSTNAME
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   cache-server:
     build:
       context: ./cache-server
@@ -22,7 +27,7 @@ services:
     ports:
       - 8080:8080
     depends_on: 
-      - database 
+      - database  
       - nats-streaming
   publish-server:
     build:
@@ -45,4 +50,4 @@ services:
       - .env
     command: "-m 8222 --cluster_id test-cluster --store file --dir /data"
     volumes:
-      - ./data:/data
+      - ./nats-data:/data
